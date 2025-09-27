@@ -44,7 +44,7 @@ class UserController extends Controller
             $user->role = $request->input('role');
             $user->save();
 
-            Mail::to($user->email)->send( new \App\Mail\UserEmailVerification($user));
+            Mail::to($user->email)->send(new \App\Mail\UserEmailVerification($user));
 
             return response()->json([
                 'user' => $user,
@@ -59,13 +59,14 @@ class UserController extends Controller
         }
     }
 
-    public function verify(Request $request) {
+    public function verify(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'code' => 'required',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'errors' => $validator->errors(),
             ], 400);
@@ -73,7 +74,7 @@ class UserController extends Controller
 
         try {
             $user = User::where('email', $request->email)->first();
-            if(!$user || $user->verification_code !== $request->code) {
+            if (!$user || $user->verification_code !== $request->code) {
                 return response()->json([
                     'message' => 'Code is invalid',
                 ], 400);
@@ -89,7 +90,7 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'Verified Successfully.',
             ], 200);
-        } catch(\Exception $error) {
+        } catch (\Exception $error) {
             return response()->json([
                 'errors' => $error,
             ], 500);
@@ -106,7 +107,7 @@ class UserController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
-            if($user->email_verified_at === null) {
+            if ($user->email_verified_at === null) {
                 return response()->json([
                     'message' => "Please verify account before login"
                 ], 400);
@@ -125,24 +126,86 @@ class UserController extends Controller
         ], 400);
     }
 
-    public function getUsers() {
+    public function forgetPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email'
+        ], [
+            'email.exists' => 'The email does not exist in our records.'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+        try {
+            $user = User::where('email', $request->email)->first();
+            // if(!$user) {
+            //     return response()->json([
+            //         'message' => 'User not found',
+            //     ], 404);
+            // }
+            Mail::send('emails.forget-password', [
+                'user' => $user,
+                'url' => env('FRONTEND_URL') . '/api/changepassword?email=' . $user->email,
+            ], function ($message) use ($user) {
+                $message->to($user->email)
+                    ->subject('Reset Account Password');
+            });
+
+            return response()->json([
+                'message' => "Please check your mail to reset password",
+            ], 200);
+
+        } catch (\Exception $error) {
+            return response()->json([
+                'errors' => $error->getMessage(),
+                'message' => 'Server Error'
+            ], 500);
+        }
+    }
+
+    public function getUser($id)
+    {
+        try {
+            $user = User::find($id);
+            if (!$user) {
+                return response()->json([
+                    'message' => 'User not found',
+                ], 404);
+            }
+            return response()->json([
+                'user' => $user,
+            ], 200);
+
+        } catch (\Exception $error) {
+            return response()->json([
+                'errors' => $error,
+            ], 500);
+        }
+    }
+
+    public function getUsers()
+    {
         $users = User::all();
         return $users;
     }
 
-    public function adminUpdateUserRole(Request $request, $id) {
+    public function adminUpdateUserRole(Request $request, $id)
+    {
         $validator = Validator::make($request->all(), [
             'role' => 'required|in:user,admin,vendor'
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'errors' => $validator->errors(),
             ], 400);
         }
         try {
             $user = User::find($id);
-            if(!$user) {
+            if (!$user) {
                 return response()->json([
                     'message' => 'User not found',
                 ], 404);
@@ -150,7 +213,7 @@ class UserController extends Controller
             $user->role = $request->input('role');
             $user->save();
 
-        } catch(\Exception $error) {
+        } catch (\Exception $error) {
             return response()->json([
                 'errors' => $error,
             ], 500);
@@ -162,7 +225,8 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function editUser(Request $request, $id) {
+    public function editUser(Request $request, $id)
+    {
         $validator = Validator::make($request->all(), [
             'firstname' => 'required|string|max:50',
             'lastname' => 'sometimes|required|string|max:50',
@@ -180,7 +244,7 @@ class UserController extends Controller
         }
         try {
             $user = User::find($id);
-            if(!$user) {
+            if (!$user) {
                 return response()->json([
                     'message' => 'User not found',
                 ], 404);
@@ -220,7 +284,8 @@ class UserController extends Controller
         }
     }
 
-    public function logout(Request $request) {
+    public function logout(Request $request)
+    {
         $user = $request->user();
         $user->tokens()->delete();
 
