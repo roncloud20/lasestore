@@ -23,7 +23,8 @@ class UserController extends Controller
             'password' => 'required|same:confirm_password|string|min:8',
             'confirm_password' => 'required|string|same:password',
             'phone_number' => 'required|string|min:11|max:14|unique:users,phone_number',
-            'role' => 'required|in:user,admin,vendor'
+            'role' => 'required|in:user,admin,vendor',
+            'imageP' => 'required|image|mimes:jpg,jpeg,png|max:3072',
         ]);
 
         if ($validator->fails()) {
