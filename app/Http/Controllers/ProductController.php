@@ -74,26 +74,52 @@ class ProductController extends Controller
         ], 200);
     }
 
-    public function approveProduct($id)
+    public function approveProduct(Request $request, $id)
     {
-        $product = Product::where('product_id', $id)->first();
-        if (!$product) {
+        $validator = Validator::make($request->all(), [
+            'status' => 'required|in:approved,rejected',
+        ]);
+
+        if($validator->fails()) {
             return response()->json([
-                'message' => 'Product not found.',
-            ], 404);
+                'errors' => $validator->errors(),
+                'message' => 'Bad Entry',
+            ], 400);
         }
-        Product::where('product_id', $id)->update(['admin_status' => 'approved']);
-        // $product->admin_status = 'approved';
-        // $product->save();
-        return response()->json([
-            'message' => 'Product approved successfully.',
-            'product' => $product,
-        ], 200);
+
+        try {
+            $product = Product::where('product_id', $id)->first();
+            if (!$product) {
+                return response()->json([
+                    'message' => 'Product not found.',
+                ], 404);
+            }
+            Product::where('product_id', $id)->update(['admin_status' => $request->status]);
+            // $product->admin_status = 'approved';
+            // $product->save();
+            return response()->json([
+                'message' => 'Product approved successfully.',
+                'product' => $product,
+            ], 200);
+        } catch (\Exception $errors) {
+            return response()->json([
+                'message' => 'Server Error.',
+                'errors' => $errors->getMessage(),
+            ], 500);
+        }
     }
 
     // Fetching all products that has been approved by admin
     public function getProducts(){
         $products = Product::where('admin_status', 'approved')->get();
+        return response()->json([
+            'products' => $products,
+        ], 200);
+    }
+
+    // Fetching all products that has been approved by admin
+    public function getAdminProducts(){
+        $products = Product::get();
         return response()->json([
             'products' => $products,
         ], 200);
