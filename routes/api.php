@@ -14,6 +14,7 @@ Route::post('/register', [UserController::class, 'register']);
 Route::post('/verify', [UserController::class, 'verify']);
 Route::post('/login', [UserController::class, 'login']);
 Route::post('/forgetpassword', [UserController::class, 'forgetPassword']);
+Route::post('/changepassword', [UserController::class, 'changePassword']);
 
 // Product Routes
 Route::get('/allproduct', [ProductController::class, 'getProducts']);

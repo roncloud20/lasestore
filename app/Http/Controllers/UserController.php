@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-// use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 
 class UserController extends Controller
@@ -142,14 +145,17 @@ class UserController extends Controller
         }
         try {
             $user = User::where('email', $request->email)->first();
-            // if(!$user) {
-            //     return response()->json([
-            //         'message' => 'User not found',
-            //     ], 404);
-            // }
+            $token = Str::random(60);
+            DB::table('password_reset_tokens')->insert([
+                'email' => $request->email,
+                'token' => Hash::make($token),
+                'created_at' => Carbon::now(),
+            ]);
+            // return $token;
+
             Mail::send('emails.forget-password', [
                 'user' => $user,
-                'url' => env('FRONTEND_URL') . '/api/changepassword?email=' . $user->email,
+                'url' => env('FRONTEND_URL') . '/change-password?email=' . $user->email . "&token=" . $token,
             ], function ($message) use ($user) {
                 $message->to($user->email)
                     ->subject('Reset Account Password');
@@ -163,6 +169,65 @@ class UserController extends Controller
             return response()->json([
                 'errors' => $error->getMessage(),
                 'message' => 'Server Error'
+            ], 500);
+        }
+    }
+
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+            'token' => 'required|string',
+            'password' => 'required|string|same:confirmed'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Request Error',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        try {
+            $tokenUser = DB::table('password_reset_tokens')->where('email', $request->email)->first();
+            if (!$tokenUser) {
+                return response()->json([
+                    'message' => 'User not Found',
+                ], 422);
+            // } else if ($request->token !== $tokenUser->token) {
+            } else if (!Hash::check($request->token,$tokenUser->token)) {
+                return response()->json([
+                    'message' => 'Token Error',
+                ], 422);
+            }
+            $tokenDate = Carbon::parse($tokenUser->created_at);
+            $diffHour = $tokenDate->diffInMinutes(now());
+            if ($diffHour > 10) {
+                DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+                return response()->json([
+                    'message' => 'Token Expired',
+                ], 408);
+            }
+
+            $user = User::where('email', $request->email)->first();
+            if (!$user) {
+                return response()->json([
+                    'message' => 'User not Found',
+                ], 422);
+            }
+            DB::table('users')->where('email', $request->email)->update([
+                'password' => Hash::make($request->password),
+            ]);
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            return response()->json([
+                'message' => 'Password Changed Successfully',
+            ],200);
+
+        } catch (\Exception $errors) {
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            return response()->json([
+                'message' => 'Server Error',
+                'errors' => $errors->getMessage(),
             ], 500);
         }
     }
