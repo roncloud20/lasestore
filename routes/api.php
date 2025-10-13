@@ -27,7 +27,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/addproduct',[ProductController::class, 'addproduct']);
     Route::get('/admin/allproduct', [ProductController::class, 'getAdminProducts']);
     Route::get('/pending/products', [ProductController::class, 'getPendingProducts']);
-    Route::post('/approved/products/{id}', [ProductController::class, 'approveProduct']);
+    Route::post('/products/status/{id}', [ProductController::class, 'changeProductStatus']);
 
     Route::post('/admin/user/roleupdate/{id}', [UserController::class, 'adminUpdateUserRole']);
 

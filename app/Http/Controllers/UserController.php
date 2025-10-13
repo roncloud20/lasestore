@@ -101,34 +101,44 @@ class UserController extends Controller
         }
     }
 
+   
     public function login(Request $request)
     {
-
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
-
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            if ($user->email_verified_at === null) {
+        try {
+            $credentials = $request->validate([
+                'email' => 'required|email|exists:users',
+                'password' => 'required'
+            ]);
+    
+            if (Auth::attempt($credentials)) {
+                $user = Auth::user();
+                if ($user->email_verified_at === null) {
+                    return response()->json([
+                        'message' => "Please verify account before login"
+                    ], 400);
+                }
+                // $token = $user->createToken('lase-token')->plainTextToken;
+                $token = $user->createToken('lase-token')->plainTextToken;
                 return response()->json([
-                    'message' => "Please verify account before login"
-                ], 400);
+                    'user' => $user,
+                    'message' => "Login Successfully",
+                    'token' => $token,
+                ], 200);
             }
-            // $token = $user->createToken('lase-token')->plainTextToken;
-            $token = $user->createToken('lase-token')->plainTextToken;
+            
+            $errors = ['email' => 'invalid email', 'password' => 'invalid password'];
             return response()->json([
-                'user' => $user,
-                'message' => "Login Successfully",
-                'token' => $token,
-            ], 200);
+                'message' => 'Invalid Login Credentials',
+                'errors' => $errors,
+            ], 400);
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => 'Invalid Login Credentials',
+                'errors' => $error->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'message' => 'Invalid Login Credentials'
-        ], 400);
     }
+
 
     public function forgetPassword(Request $request)
     {

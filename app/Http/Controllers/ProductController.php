@@ -74,10 +74,10 @@ class ProductController extends Controller
         ], 200);
     }
 
-    public function approveProduct(Request $request, $id)
+    public function changeProductStatus(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:approved,rejected',
+            'status' => 'required|in:approved,pending,rejected',
         ]);
 
         if($validator->fails()) {
