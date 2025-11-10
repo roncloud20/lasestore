@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AddressController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -32,5 +33,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/admin/user/roleupdate/{id}', [UserController::class, 'adminUpdateUserRole']);
 
     Route::post('/user/edit/{id}', [UserController::class, 'editUser']);
+
+    Route::post('address/create', [AddressController::class, 'createAddress']);
 
 });
