@@ -10,6 +10,8 @@ use App\Http\Controllers\ProductController;
 //     return $request->user();
 // })->middleware('auth:sanctum');
 
+Route::post('/test', [AddressController::class, 'test']);
+
 // User Routes
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/verify', [UserController::class, 'verify']);
