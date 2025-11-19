@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\ProductController;
 // })->middleware('auth:sanctum');
 
 Route::post('/test', [AddressController::class, 'test']);
+Route::post('/create/order', [OrderController::class, 'createOrder'])->middleware('auth:sanctum');
 
 // User Routes
 Route::post('/register', [UserController::class, 'register']);
@@ -25,6 +27,7 @@ Route::get('/allproduct', [ProductController::class, 'getProducts']);
 Route::get('/product/{id}', [ProductController::class, 'getProductById']);
 
 Route::middleware('auth:sanctum')->group(function(){
+    Route::get('/getaddress', [AddressController::class, 'getUserAddress']);
     Route::get('getuser/{id}', [UserController::class, 'getUser']);
     Route::get('/getusers', [UserController::class, 'getUsers']);
     Route::post('/addproduct',[ProductController::class, 'addproduct']);

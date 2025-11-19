@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -15,7 +16,7 @@ class OrderController extends Controller
             'quantity' => 'required|integer',
             'unit_price' => 'required|decimal',
             'order_ref' => 'required|string',
-            'order_status' => 'required|in:pending,shipped,out_for_delivery,delivered,rejected,returned'
+            // 'order_status' => 'required|in:pending,shipped,out_for_delivery,delivered,rejected,returned'
         ]);
 
         if ($validator->fails()) {
@@ -26,6 +27,16 @@ class OrderController extends Controller
         }
 
         try {
+            $customer_id = auth()->user()->id;
+            $order = new Order;
+            $order->product_id = $request->input('product_id');
+            $order->quantity = $request->input('quantity');
+            $order->unit_price = $request->input('unit_price');
+            $order->cost_price = $request->input('cost_price');
+            $order->customer_id = '$customer_id';
+            $order->order_ref = $request->input('order_ref');
+
+            return $customer_id;
 
         } catch(\Exception $errors) {
             return response()->json([

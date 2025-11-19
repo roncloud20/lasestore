@@ -56,21 +56,18 @@ class AddressController extends Controller
         }
     }
 
-    public function test(Request $request) {
-        $accept = $request->header('accept');
-        $product = [
-            'product_name' => 'I-Phone',
-            'price' => 2000000
-        ];
-
-        $xmlproduct = "<?xml version='1.0' encoding='UTF-8'?><root><product_name>I-Phone<product_name><price>2000000</price></root>";
-
-        if($accept === 'application/json') {
-            return response()->json($product);
-
-        } else if ($accept === 'application/xml') {
-            return response($xmlproduct, 200)->header('Content-Type', 'application/xml');
+    public function getUserAddress() {
+        $id = auth()->user()->id;
+        $addresses = Address::where('user_id', $id)->get();
+        if ($addresses) {
+            return response()->json([
+                'addresses' => $addresses,
+                'message' => 'user address(es) found',
+            ],200);
+        } else {
+            return response()->json([
+                'message' => 'No adress was found for this user', 
+            ], 400);
         }
-        return $accept;
     }
 }
