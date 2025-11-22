@@ -4,17 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Order extends Model
+class Payment extends Model
 {
     //
     protected $fillable = [
-        'product_id',
-        'quantity',
-        'unit_price',
-        'cost_price',
-        'customer_id',
         'order_ref',
-        'order_status',
+        'total',
+        'payment_status',
+        'payment_ref',
+        'customer_id',
+        'payment_method',
         'address_id',
     ];
 }

@@ -33,10 +33,15 @@ class OrderController extends Controller
             $order->quantity = $request->input('quantity');
             $order->unit_price = $request->input('unit_price');
             $order->cost_price = $request->input('cost_price');
-            $order->customer_id = '$customer_id';
+            $order->customer_id = $customer_id;
             $order->order_ref = $request->input('order_ref');
+            $order->address_id = $request->input('address_id');
+            $order->save();
 
-            return $customer_id;
+            return response()->json([
+                'order' => $order,
+                'message' => 'Order created successfully',
+            ],201);
 
         } catch(\Exception $errors) {
             return response()->json([

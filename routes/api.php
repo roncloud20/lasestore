@@ -2,14 +2,10 @@
 
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\OrderController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
-
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
+use App\Http\Controllers\PaymentController;
 
 Route::post('/test', [AddressController::class, 'test']);
 Route::post('/create/order', [OrderController::class, 'createOrder'])->middleware('auth:sanctum');
@@ -28,6 +24,7 @@ Route::get('/product/{id}', [ProductController::class, 'getProductById']);
 
 Route::middleware('auth:sanctum')->group(function(){
     Route::get('/getaddress', [AddressController::class, 'getUserAddress']);
+    Route::post('/processpayment', [PaymentController::class, 'processPayment']);
     Route::get('getuser/{id}', [UserController::class, 'getUser']);
     Route::get('/getusers', [UserController::class, 'getUsers']);
     Route::post('/addproduct',[ProductController::class, 'addproduct']);
