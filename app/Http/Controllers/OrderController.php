@@ -12,11 +12,12 @@ class OrderController extends Controller
     // create order 
     public function createOrder (Request $request) {
         $validator = Validator::make($request->all(),[
-            'product_id' => 'required|exists:products,product_id|interger',
-            'quantity' => 'required|integer',
-            'unit_price' => 'required|decimal',
+            'product_id' => 'required|exists:products,product_id',
+            'quantity' => 'required',
+            'unit_price' => 'required|numeric',
             'order_ref' => 'required|string',
-            // 'order_status' => 'required|in:pending,shipped,out_for_delivery,delivered,rejected,returned'
+            'address_id' => 'required|exists:addresses,id',
+            'cost_price' => 'required|numeric',
         ]);
 
         if ($validator->fails()) {
