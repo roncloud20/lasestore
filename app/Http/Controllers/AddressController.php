@@ -70,4 +70,18 @@ class AddressController extends Controller
             ], 400);
         }
     }
+
+    public function deleteAddress($id) {
+        $address = Address::find($id);
+        if ($address) {
+            $address->delete();
+            return response()->json([
+                'message' => 'Address deleted successfully',
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'Address not found',
+            ], 404);
+        }
+    }
 }
